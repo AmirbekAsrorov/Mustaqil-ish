@@ -1,0 +1,370 @@
+const {
+  Document, Packer, Paragraph, TextRun, HeadingLevel,
+  AlignmentType, PageNumber, NumberFormat, LevelFormat,
+  Header, Footer, TabStopType, TabStopPosition,
+  BorderStyle, PageBreak, TableOfContents
+} = require('docx');
+const fs = require('fs');
+
+// Helper functions
+const heading1 = (text) => new Paragraph({
+  heading: HeadingLevel.HEADING_1,
+  children: [new TextRun({ text, bold: true, size: 32, font: "Times New Roman" })],
+  spacing: { before: 360, after: 180 },
+});
+
+const heading2 = (text) => new Paragraph({
+  heading: HeadingLevel.HEADING_2,
+  children: [new TextRun({ text, bold: true, size: 28, font: "Times New Roman" })],
+  spacing: { before: 280, after: 140 },
+});
+
+const heading3 = (text) => new Paragraph({
+  heading: HeadingLevel.HEADING_3,
+  children: [new TextRun({ text, bold: true, size: 26, font: "Times New Roman" })],
+  spacing: { before: 200, after: 120 },
+});
+
+const para = (text, options = {}) => new Paragraph({
+  children: [new TextRun({ text, size: 24, font: "Times New Roman", ...options })],
+  spacing: { before: 100, after: 100, line: 360 },
+  alignment: AlignmentType.JUSTIFIED,
+  indent: { firstLine: 720 },
+});
+
+const boldPara = (text) => new Paragraph({
+  children: [new TextRun({ text, size: 24, font: "Times New Roman", bold: true })],
+  spacing: { before: 100, after: 100, line: 360 },
+  alignment: AlignmentType.JUSTIFIED,
+  indent: { firstLine: 720 },
+});
+
+const centerPara = (text, size = 24, bold = false) => new Paragraph({
+  children: [new TextRun({ text, size, font: "Times New Roman", bold })],
+  spacing: { before: 120, after: 120 },
+  alignment: AlignmentType.CENTER,
+});
+
+const emptyLine = () => new Paragraph({
+  children: [new TextRun({ text: "", size: 24 })],
+  spacing: { before: 60, after: 60 },
+});
+
+const pageBreak = () => new Paragraph({
+  children: [new PageBreak()],
+});
+
+const doc = new Document({
+  styles: {
+    default: {
+      document: { run: { font: "Times New Roman", size: 24 } },
+    },
+    paragraphStyles: [
+      {
+        id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal",
+        run: { size: 32, bold: true, font: "Times New Roman", color: "000000" },
+        paragraph: { spacing: { before: 360, after: 180 }, outlineLevel: 0 }
+      },
+      {
+        id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal",
+        run: { size: 28, bold: true, font: "Times New Roman", color: "000000" },
+        paragraph: { spacing: { before: 280, after: 140 }, outlineLevel: 1 }
+      },
+      {
+        id: "Heading3", name: "Heading 3", basedOn: "Normal", next: "Normal",
+        run: { size: 26, bold: true, font: "Times New Roman", color: "000000" },
+        paragraph: { spacing: { before: 200, after: 120 }, outlineLevel: 2 }
+      },
+    ]
+  },
+  numbering: {
+    config: [
+      {
+        reference: "bullets",
+        levels: [{
+          level: 0, format: LevelFormat.BULLET, text: "–", alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } }
+        }]
+      },
+    ]
+  },
+  sections: [{
+    properties: {
+      page: {
+        size: { width: 11906, height: 16838 },
+        margin: { top: 1701, right: 992, bottom: 1701, left: 1701 }
+      }
+    },
+    headers: {
+      default: new Header({
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: "Rossiya va O'zbek Arabshunosligining Qiyosiy O'rganish", size: 18, font: "Times New Roman", italics: true })],
+            alignment: AlignmentType.CENTER,
+            border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "999999" } },
+          })
+        ]
+      })
+    },
+    footers: {
+      default: new Footer({
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Sahifa ", size: 20, font: "Times New Roman" }),
+              new TextRun({ children: [PageNumber.CURRENT], size: 20, font: "Times New Roman" }),
+            ],
+            alignment: AlignmentType.CENTER,
+          })
+        ]
+      })
+    },
+    children: [
+      // TITLE PAGE
+      emptyLine(),
+      emptyLine(),
+      centerPara("O'ZBEKISTON RESPUBLIKASI OLIY VA O'RTA MAXSUS TA'LIM VAZIRLIGI", 24, true),
+      emptyLine(),
+      centerPara("FILOLOGIYA YO'NALISHI", 24, true),
+      emptyLine(),
+      centerPara("TILSHUNOSLIK BILIMLARI TARIXI", 24, true),
+      centerPara("fanidan", 24, false),
+      emptyLine(),
+      centerPara("MUSTAQIL ISH", 28, true),
+      emptyLine(),
+      centerPara("MAVZU:", 24, true),
+      emptyLine(),
+      centerPara("ROSSIYA VA O'ZBEK ARABSHUNOSLIGINING QIYOSIY O'RGANISH", 26, true),
+      emptyLine(),
+      emptyLine(),
+      new Paragraph({
+        children: [new TextRun({ text: "Bajardi:  ________________________________", size: 24, font: "Times New Roman" })],
+        spacing: { before: 200, after: 60 },
+        alignment: AlignmentType.LEFT,
+        indent: { left: 4000 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: "(Ism Familiya Sharif)", size: 22, font: "Times New Roman", italics: true })],
+        spacing: { before: 60, after: 100 },
+        alignment: AlignmentType.LEFT,
+        indent: { left: 4000 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: "1-kurs, Filologiya yo'nalishi talabasi", size: 24, font: "Times New Roman" })],
+        spacing: { before: 60, after: 100 },
+        alignment: AlignmentType.LEFT,
+        indent: { left: 4000 },
+      }),
+      emptyLine(),
+      new Paragraph({
+        children: [new TextRun({ text: "Tekshirdi:  ________________________________", size: 24, font: "Times New Roman" })],
+        spacing: { before: 200, after: 60 },
+        alignment: AlignmentType.LEFT,
+        indent: { left: 4000 },
+      }),
+      emptyLine(),
+      emptyLine(),
+      emptyLine(),
+      centerPara("2024-2025 o'quv yili", 24, false),
+
+      // TABLE OF CONTENTS
+      pageBreak(),
+      centerPara("MUNDARIJA", 28, true),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "Kirish .......................................................................................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "I bob. Arabshunoslik: tarix va shakllanish ............................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "    1.1. Arabshunoslikning ilk bosqichlari ...............................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    1.2. G'arbda arabshunoslikning paydo bo'lishi ....................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    1.3. Sharqdagi arabshunoslik an'analari .............................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "II bob. Rossiya arabshunosligi maktabi ....................................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "    2.1. Rossiya arabshunosligining shakllanishi va rivojlanishi .................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    2.2. Rossiya arabshunosligi vakillari va ularning xizmatlari ................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    2.3. Rossiya arabshunosligining asosiy yo'nalishlari ..........................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    2.4. Sovet davrida Rossiya arabshunosligi .......................................   ", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "III bob. O'zbek arabshunosligi maktabi ....................................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "    3.1. O'rta Osiyo va Movarounnahr arabshunosligining tarixi ................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    3.2. O'zbek arabshunosligining XX asr vakillari ..................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    3.3. O'zbek arabshunosligining asosiy yo'nalishlari va natijalari .......", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    3.4. Mustaqillik davrida o'zbek arabshunosligi ...................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "IV bob. Rossiya va o'zbek arabshunosligini qiyosiy tahlil ........................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "    4.1. O'xshashliklar va farqlar .............................................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    4.2. Hamkorlik va o'zaro ta'sir ..........................................................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "    4.3. Zamonaviy arabshunoslikda yangi tendensiyalar .........................", size: 24, font: "Times New Roman" })], spacing: { before: 60, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "Xulosa .......................................................................................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "Foydalanilgan adabiyotlar .......................................................................", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 80 } }),
+
+      // KIRISH
+      pageBreak(),
+      heading1("KIRISH"),
+      para("Arabshunoslik — arab tili, adabiyoti, tarixi, madaniyati hamda islom sivilizatsiyasini ilmiy jihatdan o'rganadigan murakkab va ko'p qirrali fan sohasidir. Bu soha asrlar davomida turli davlat va xalqlar ilmiy an'analarida shakllanib, har bir mintaqada o'ziga xos xususiyatlar kasb etgan. Arab tili o'zining lug'at boyligi, grammatik murakkabligi va jahon sivilizatsiyasidagi o'rni jihatidan alohida ilmiy ahamiyatga ega bo'lib, uni o'rganish va tadqiq etish asrlar mobaynida davom etib kelmoqda."),
+      para("Arabshunoslik fani faqat arab tiliga oid bo'lmasdan, balki arablar yaratgan ulkan madaniy meros — falsafa, tibbiyot, astronomiya, matematika, geografiya, tarix va badiiy adabiyotni o'z ichiga oluvchi keng soha hisoblanadi. O'rta asrlarda arab tili xuddi lotin tili kabi Yevropa va Sharqda ilm-fan tili sifatida ishlatilgan. Shu sababli arabshunoslikni o'rganmasdan dunyo ilmiy merosini to'liq tushunish mumkin emas."),
+      para("Rossiya va o'zbek arabshunosligi — ikki yirik ilmiy maktab sifatida — bir-biridan geografik, tarixiy va madaniy jihatdan farq qilsa-da, umumiy metodologik zaminlarga ega. Jumladan, sovet davridagi yagona ilmiy muassasalar tizimi, birgalikda olib borilgan ekspeditsiyalar hamda nashriyot faoliyati ikki maktab o'rtasida chuqur intellektual aloqalarni vujudga keltirgan. Ushbu aloqalar bugungi kunda ham seziladi, garchi har ikkala maktab endi mustaqil yo'lda rivojlanayotgan bo'lsa-da."),
+      para("Mazkur mustaqil ishning maqsadi — Rossiya va o'zbek arabshunoslik maktablarini qiyosiy tahlil qilish, ularning tarixi, vakillari, metodologiyasi, asosiy yutuqlari va bir-biriga ta'sirini ilmiy-tahliliy nuqtai nazardan ochib berishdan iborat. Bu maqsadga erishish uchun har bir maktabning shakllanish tarixi, yetakchi vakillari, ilmiy yutuqlari va zamonaviy holati keng yoritiladi."),
+      para("Ishning dolzarbligi shundaki, hozirgi kunda globallashuv sharoitida milliy ilmiy maktablar o'rtasidagi farqlar va o'xshashliklarni aniqlash, ularning o'ziga xos hissasini baholash alohida ahamiyat kasb etmoqda. Bundan tashqari, o'zbek arabshunosligi mustaqillik yillarida yangi bosqichga ko'tarilgan bo'lib, bu soha chuqurroq ilmiy tadqiqotni talab etadi. Jahon miqyosida arabshunoslik rivoji va unga o'zbek hamda rus maktablarining qo'shgan hissasini aniqlash nafaqat akademik, balki amaliy jihatdan ham muhim ahamiyat kasb etadi."),
+      para("Ishning ilmiy yangiligi shundan iboratki, unda ikkala maktabning rivojlanish bosqichlari parallel ravishda o'rganilib, ularning o'xshashliklari va farqlari aniq dalillar asosida tahlil qilinadi. Ayniqsa, sovet davridagi hamkorlik va mustaqillik yillaridagi yangi tendensiyalar alohida e'tibor bilan ko'rib chiqiladi."),
+      para("Ishda tarixiy-tavsifiy metod, qiyosiy tahlil metodi va tizimlash metodlaridan foydalanildi. Manbalar sifatida rus va o'zbek tillarida nashr etilgan ilmiy monografiyalar, maqolalar hamda entsiklopedik nashrlardan foydalanildi. Ishning hajmi — kirish, to'rtta bob, xulosa va foydalanilgan adabiyotlar ro'yxatidan iborat."),
+
+      // BOB I
+      pageBreak(),
+      heading1("I BOB. ARABSHUNOSLIK: TARIX VA SHAKLLANISH"),
+      heading2("1.1. Arabshunoslikning ilk bosqichlari"),
+      para("Arabshunoslik fanining ildizlari IX-X asrlarga borib taqaladi. O'sha davrda Abbosiylar xalifaligida arab tili ilmining jadal rivojlanishi boshlanib, Basra, Kufa va keyinchalik Bag'dod grammatika maktablari vujudga keldi. Bu maktablar nafaqat arab tilining grammatikasini, balki uslubiyat, she'riyat va balag'at (ritorika) ilmlarini ham ilmiy asosda o'rgana boshladilar. Basra maktabi qoidachilik (qiyos) tamoyiliga asoslansa, Kufa maktabi tilning tarixiy foydalanishini (rivoyat) ustuvor bildi — bu munozara arabshunoslikda uzoq yillar davom etdi."),
+      para("Abu-l-Asvad ad-Du'aliy (vafoti 688) arab grammatikasining asoschisi sifatida tan olinadi — u arab yozuviga harakat belgilarini kiritgan birinchi olimdir. Bu kashfiyot arab yozuvini standartlashtirish va Qur'on matnini to'g'ri o'qishni ta'minlash uchun zarur edi. Ad-Du'aliy grammatik toifalarni (ism, fe'l, harf) birinchi bor ilmiy asosda tasnif qildi. Uning ishlari keyingi avlod tilshunoslarining asosini yaratdi."),
+      para("Sibavayhi (vafoti 796) tomonidan yozilgan «Al-Kitob» («Kitob») asari arab grammatikasining dastlabki va eng to'liq qomusi hisoblanadi. Bu asar o'sha davrda mavjud grammatik bilimlarni to'liq qamrab olgan bo'lib, keyingi arabshunoslarning asosiy manbaiga aylandi. Sibavayhi «Al-Kitob»da arab tilining barcha grammatik hodisalarini — morfologiya, sintaksis, fonetika — tizimli ravishda tahlil qildi. Bu asarning ahamiyati shunchalik kattaki, arab grammatikchilari uni oddiy «Al-Kitob» — «Kitob» deb atashgan, go'yo u arabshunoslikdagi yagona kitob."),
+      para("Xalil ibn Ahmad al-Farahidiy (vafoti 791) esa arab leksikografiyasining asoschisi sifatida birinchi mukammal arab lug'ati — «Kitob al-ayn»ni tuzdi. Bu lug'at so'zlarni fonetik tamoyil asosida — tovushlar artikulyatsiya o'rniga qarab — tartibga solgan. Xalil ibn Ahmad shuningdek arab she'riyatidagi vazn tizimlarini (aruz) ham birinchi bor ilmiy asosda tasniflagan olimdir. Uning aruz ilmi arabshunoslikda mustaqil fan sohasi bo'lib rivojlandi."),
+      para("Movarounnahrda arabshunoslik IX asrdanoq rivojlana boshladi. Bu hududda yashovchi olimlar arab tilini o'rganib, uni o'z ona tillari bilan qiyoslab tadqiq etdilar. Shunday qiyosiy yondashuv keyinchalik arabshunoslikning rivojiga muhim hissa qo'shdi. Mahmud az-Zamaxshariy (1075-1144) arab tilshunosligi tarixidagi eng buyuk olimlardan biri bo'lib, uning «Al-Mufassal» asari arab grammatikasining oltin fondi sifatida baholanadi. Az-Zamaxshariy Xorazm yaqinida tug'ilgan bo'lib, o'z asarlari orqali Movarounnahr ilmiy an'anasini jahon arabshunosligiga uladi."),
+      para("X-XII asrlarda arab tilshunosligi yanada takomillashdi. Ibn Jinniy (942-1002) «Al-Xasois» asarida arab tilining fonetik va morfologik xususiyatlarini chuqur tahlil qildi. Ibn Faris (920-1004) esa «Maqoyis al-lug'a» nomli lug'atida arab so'zlarining etimologiyasini o'rganib, har bir ildizning asosiy ma'nosini aniqlashga harakat qildi. Bu asarlar arabshunoslikda semantika va leksikologiya yo'nalishining rivojlanishida muhim o'rin tutadi."),
+      para("O'rta asrlarda arab tili islom madaniyatining asosiy tili sifatida jahon ilmida yetakchi o'rin egalladi. Yunoncha va suryonicha asarlarning arabchaga tarjima qilinishi natijasida Aristotel, Gipokrat, Ptolemey va boshqa qadimgi yunon olimlarining merosini arab olimlari qayta kashf etib, uni yanada rivojlantirdilar. Bu jarayon arabshunoslikning yangi yo'nalishlari — ilmiy tarjima, terminologiya va falsafiy arabshunoslik — shakllanishiga olib keldi."),
+
+      heading2("1.2. G'arbda arabshunoslikning paydo bo'lishi"),
+      para("Yevropa arabshunosligi XVII-XVIII asrlarda shakllana boshladi. Bu davrda Gollandiya, Fransiya va Buyuk Britaniyada arab tilini o'rganishga bo'lgan qiziqish kuchaydi. Bunday qiziqishning asosiy sababi savdo munosabatlari, missionerlik faoliyati hamda sharq qo'lyozmalariga bo'lgan ilmiy ehtiyoj edi. Birinchi Yevropa arabshunoslarining ko'pchiligi ruhoniylar yoki savdogarlar bo'lgan, ular arab tili bilimini amaliy maqsadlarda o'rganganlar."),
+      para("1613-yilda Leyden universitetida (Gollandiya) birinchi arab tili kafedrasi ochildi. Bu voqea Yevropa arabshunosligining institutlashuvida muhim bosqich bo'ldi. Gollandiya o'sha davrda savdo va ilm sohasida yetakchi davlat bo'lganligi bois, arab tilidagi savdo yozishmalarini tushunish zaruriyati paydo bo'ldi. Leyden universiteti kutubxonasi tezda arab qo'lyozmalarining boy fondiga ega bo'ldi va bu manbalar Yevropa arabshunoslari uchun asosiy manba bo'lib xizmat qildi."),
+      para("Silvestre de Sacy (1758-1838) fransuz arabshunosligining asoschisi hisoblangan bo'lib, uning «Grammaire arabe» (1810) asari uzoq yillar davomida standart qo'llanma bo'lib xizmat qildi. U Parij kollejida arab tili professori bo'lib ishlagan va ko'plab shogirdlar tayyorlagan. De Sacyning metodologiyasi keyinchalik butun Yevropa arabshunosligi maktabiga ta'sir ko'rsatdi. U arab tilidagi bitiklar va tangalarni o'rganishda palaeografiya metodini arabshunoslikka kiritgan birinchi olimdir."),
+      para("XIX asrda Yevropa arabshunosligi yanada rivojlandi. Britaniyada Oksford va Kembrij universitetlarida arab tili o'qitiladigan bo'ldi. Nemisiyada arabshunoslik maktabi ayniqsa kuchli bo'lib, bu erda klassik arab adabiyotini keng tadqiq etish boshlandi. Vena, Berlin va Parij arxivlaridagi arab qo'lyozmalari kataloglash va nashr etish ishlari ham shu davrda boshlanib, arabshunoslikning manbashunoslik yo'nalishi shakllanishiga hissa qo'shdi."),
+      para("XIX asrning oxiri va XX asrning boshida Yevropa arabshunosligi o'zining eng yuqori bosqichiga yetdi. Karl Brokkelman (1868-1956) ning «Arab adabiyoti tarixi» (Geschichte der arabischen Litteratur) asari arabshunoslikdagi fundamental bibliografik manba bo'lib qoldi. Ignaz Goldsier (1850-1921) islom diniy manbalari va hadisshunoslikni ilmiy tadqiqga tortdi. Bu davrda Yevropa arabshunoslari Arab dunyosidagi ekspeditsiyalar orqali ko'plab yangi qo'lyozmalar va yozuvlar topdilar."),
+
+      heading2("1.3. Sharqdagi arabshunoslik an'analari"),
+      para("Sharqda, xususan Islom olamida arabshunoslik faqat ilmiy yo'nalishgina emas, balki diniy burch sifatida ham qabul qilingan. Qur'on arabcha bo'lganligi sababli, har bir muslim uchun arab tilini bilish muhim hisoblangan. Bu holat arabshunoslikning keng miqyosda tarqalishiga va uning turli mintaqalarda rivojlanishiga olib keldi."),
+      para("Eron, Hindiston, Turkiya va O'rta Osiyoda arab tili o'rta asrlardan boshlab ilm-fan tili sifatida qabul qilingan. Bu mamlakatlardagi olimlar arab tilida asarlar yozgan va Arab dunyosidagi ilmiy rivojlanishni kuzatib borgan. Fors, turk va o'zbek arabshunoslari arab tilini o'rganib, uni o'z tillarida tushuntirish, sharhlash va o'rgatish yo'lida katta ishlar qildilar."),
+      para("Hindistonda ham arabshunoslik an'anasi kuchli edi. Deoband, Aligarh va Luknov madrasalarida arab tili chuqur o'rgatildi. Hindiston arabshunoslari, ayniqsa hadisshunoslik va fiqh sohalarida, arabshunoslikka katta hissa qo'shdilar. XIX-XX asrlarda Hindiston mustaqilligiga qadar ingliz mustamlakasi ostida ham arab ilmiy an'anasi saqlanib qoldi va rivojlandi."),
+
+      // BOB II
+      pageBreak(),
+      heading1("II BOB. ROSSIYA ARABSHUNOSLIGI MAKTABI"),
+      heading2("2.1. Rossiya arabshunosligining shakllanishi va rivojlanishi"),
+      para("Rossiya arabshunosligining tarixi XVIII asrning birinchi yarmiga to'g'ri keladi. 1735-yilda Sankt-Peterburg Fanlar akademiyasida sharq tillari bo'limi tashkil etilishi ilmiy arabshunoslikning rasmiy boshlanishi hisoblanadi. Dastlab bu sohada asosan nemis va golland olimlarining tajribasidan foydalanildi, keyinchalik esa mahalliy rus olimlari yetishib chiqdi. Rossiya imperiyasining Sharq bilan savdo va diplomatik aloqalari kengayishi arab tilini o'rganish zaruratini tug'dirdi."),
+      para("XVIII asrning ikkinchi yarmida Qozon universiteti Rossiyada arabshunoslikning muhim markaziga aylandi. Bu shahar geografik jihatdan musulmon Rossiyasiga yaqin joylashganligi va tatarlar yashaydigan hudud bo'lganligi bois, arab tiliga qiziqish kuchli edi. Qozon universitetida arab tili o'qitilib, qo'lyozmalar fondlari tashkil etila boshlandi. Bu davrda birinchi rus tilida arab grammatikasiga oid qo'llanmalar yozila boshlandi."),
+      para("XIX asr Rossiya arabshunosligining oltin davri bo'ldi. Bu davrda Qozon, Sankt-Peterburg va Moskva universitetlarida arabshunoslik bo'limlari ochildi, qo'lyozma fondlari tashkil etildi. O'rta Osiyo va Kavkazdagi keng hududlarning Rossiya imperiyasi tarkibiga kirishi natijasida esa mahalliy arab qo'lyozmalariga oid ilmiy qiziqish yanada kuchaydi. Imperiya ma'muriyati o'zi boshqarayotgan musulmon aholini tushunish uchun arabshunoslikka ehtiyoj sezdi."),
+      para("1855-yilda Sankt-Peterburgda Sharq tillari departamenti ochildi. Bu muassasa diplomatik xizmat uchun mutaxassislar tayyorlashda muhim rol o'ynadi. Sharq tillari departamentida arabshunoslik nafaqat akademik fan sifatida, balki amaliy kasb sifatida ham o'rgatiladigan bo'ldi. Ko'plab diplomatlar va razvedka xodimlari bu yerda arab tilini mukammal o'rganib, Yaqin Sharq va Shimoliy Afrika mamlakatlarida faoliyat yuritdilar."),
+      para("Sovet davrida (1917-1991) arabshunoslik davlat tomonidan moliyalashtiriladigan yirik ilmiy soha darajasiga ko'tarildi. Moskva va Leningradda ixtisoslashtirilgan institutlar (Sharqshunoslik instituti, Xalqlar Sharqi instituti) tashkil etilib, bu yerda yuzlab arab manbalari tadqiq etildi va tarjima qilindi. Sovet arabshunosligi asosan tarixiy, filologik va siyosiy-iqtisodiy yo'nalishlarda rivojlandi. Sovet hukumati Arab dunyosidagi siyosiy va iqtisodiy ta'sirini kuchaytirish uchun arabshunoslik sohasiga katta e'tibor berdi."),
+      para("Sovet davrida arabshunoslik nafaqat akademik soha bo'lib qolmay, siyosiy ahamiyat kasb etdi. Arab mamlakatlarining ko'pi Sovet Ittifoqi bilan yaqin munosabatlar o'rnatdi — Misr, Suriya, Iroq, Jazoir, Yaman kabi davlatlar Sovet yordami va qurollaridan foydalandi. Bu holat amaliy arabshunoslik, xususan zamonaviy arab adabiy tili va lahjalari tadqiqini jadal rivojlanishiga olib keldi. Ko'plab sovet olim va diplomatlari arab mamlakatlarida uzoq yillar yashab, bevosita tajriba to'pladilar."),
+
+      heading2("2.2. Rossiya arabshunosligi vakillari va ularning xizmatlari"),
+      para("Xristofor Fren (1782-1851) — Rossiya Fanlar akademiyasining dastlabki yirik sharqshunos olimlaridan biri. U arabcha tangalar va bitiklar ustida keng qamrovli tadqiqotlar olib bordi. Frenning «Arab tangalari» to'plami Rossiya numizmatik arabshunosligining asosini tashkil etdi. U O'rta Osiyo, Eron va Arab dunyosidan keltirilgan minglab tangalarni tasnifladi va ilmiy tahlil qildi. Fren shuningdek arab manbalarida Rossiya tarixiga oid ma'lumotlarni izlab topishda ham muhim hissa qo'shdi."),
+      para("Osip Senkovsky (1800-1858) — o'z davri uchun noyob arab tili bilimdonligi va tarjima sohasida alohida o'rin tutadi. U arab va turk manbalarini rus tiliga tarjima qildi, badiiy-ilmiy uyg'unlikning namunasini ko'rsatdi. Senkovsky o'z maqolalari orqali arabshunoslikni keng jamoatchilikka targ'ib qildi. U «Biblioteka dlya chteniya» jurnalining muharriri sifatida arab adabiyotiga oid ko'plab maqolalar va tarjimalar nashr ettirdi. Senkovsky arab folklori va she'riyatini rus kitobxonlariga birinchi bor sistemali ravishda tanishtirib berdi."),
+      para("Vladimir Gordlevskiy (1876-1956) — taniqli rus sharqshunosi va arabshunosi. U turk va arab tillari, adabiyoti hamda madaniyatiga oid ko'plab ilmiy asarlar yozdi. Gordlevskiy Moskva sharqshunoslik maktabining shakllanishida hal qiluvchi rol o'ynadi va o'nlab shogirdlar tayyorladi. Uning arab xalq hikoyalari va maqollariga oid tadqiqotlari folklorshunoslik va arabshunoslikni birlashtirgan noyob asarlar hisoblanadi. Gordlevskiy shuningdek Turkiya va arablar o'rtasidagi madaniy aloqalarni ham keng tadqiq etdi."),
+      para("Ignatiy Krachkovskiy (1883-1951) — Rossiya arabshunosligining so'zsiz ulug' siymosi. Uning Qur'on tarjimasi va «Arab geografik adabiyoti» asari jahon ilmiga beqiyos hissa qo'shdi. Krachkovskiy Leningrad maktabini yaratdi va bu maktab o'nlab taniqli arabshunoslarni yetishtirib chiqardi. Uning «Arabskaya geograficheskaya literatura» (1957) asari hozirgacha o'z ahamiyatini yo'qotmagan. Krachkovskiy arab adabiyotining deyarli barcha janrlarini — she'riyat, geografik adabiyot, tarixiy asarlar, diniy bitiklar — tadqiq etdi va rus kitobxonlariga tanishtirdi."),
+      para("Krachkovskiyning Qur'on tarjimasi (1963, vafotidan keyin nashr etilgan) alohida diqqatga sazovor. Bu tarjima Qur'onning birinchi ilmiy-akademik rus tarjimasi bo'lib, matnga keng tafsirlarga ega sharhlar qo'shilgan. Krachkovskiy tarjimada arabcha matnning filologik aniqligini maksimal darajada saqlashga harakat qildi. Bu asar bugungi kunda ham rus tilida Qur'onning eng ishonchli ilmiy tarjimasi sifatida tan olinadi."),
+      para("Yuriy Shumovskiy (1905-2003) arab dengizchilik manbalari va arab geografiyasini o'rganishda o'ziga xos yo'nalish yaratdi. Uning arab dengizchilik tili va terminologiyasiga oid ishlari hamon dolzarb ahamiyatga ega. Shumovskiy arab dengizchilar — Ahmad ibn Mojid va Suleyman al-Mahriy — asarlarini rus tiliga tarjima qildi va ularga keng tafsirlarilar qo'shdi. Bu ishlar arab dengizchilik tarixini o'rganishda fundamental manba bo'lib qoldi."),
+      para("Aleksandr Belyaev va Yuriy Borshevskiy zamonaviy arab adabiyoti va jamoatchilik fikri tadqiqida muhim o'rin tutadilar. Ular XX asrda arab jamiyatidagi siyosiy va ijtimoiy o'zgarishlarni tahlil qilish borasida keng ilmiy ishlar olib bordilar. Sovet arabshunosligi vakillari sifatida ular arab marxizmi va milliy-ozodlik harakatlarini ham maxsus o'rganadilar."),
+
+      heading2("2.3. Rossiya arabshunosligining asosiy yo'nalishlari"),
+      para("Rossiya arabshunosligi tarixiy davr bo'yicha quyidagi asosiy yo'nalishlarda rivojlangan. Birinchi yo'nalish — klassik arab tilshunosligi va grammatikasi tadqiqi. Bu sohadagi ishlar Sibavayhi, al-Farroh, Ibn Jinniy kabi buyuk arab grammatikchilarining asarlarini sharhlash va ilmiy tahlil qilishni o'z ichiga oladi. Rossiya arabshunoslari arab grammatik an'anasini Yevropa ilmiy metodologiyasi bilan uyg'unlashtirish borasida muhim hissa qo'shdilar."),
+      para("Ikkinchi yo'nalish — arab qo'lyozmalari va manbashunosligi. XIX asrdan boshlab Rossiya imperiyasi arxivlari va kutubxonalariga arab qo'lyozmalarining keng to'plami kelib tushdi. Bu manbalarga ilmiy ishlov berish, kataloglash va nashr etish Rossiya arabshunosligining asosiy vazifalaridan biriga aylandi. Leningrad Sharq institutida O'rta Osiyodan olib kelingan minglab arab, fors va turk qo'lyozmalari saqlangan."),
+      para("Uchinchi yo'nalish — zamonaviy arab davlatlari siyosiyoti, iqtisodiyoti va ijtimoiy hayotini o'rganish. Bu ayniqsa Sovet davrida kuchaygan. Bu davrda arab dunyosi bilan siyosiy aloqalar kengayishi natijasida amaliy arabshunoslik rivojlandi. Sovet arabshunoslari arab mamlakatlarining ijtimoiy-iqtisodiy tahlili bo'yicha ko'plab monografiyalar yozdilar, bu ishlar sovet diplomatiyasi va xorijiy siyosatini shakllantirishda ham foydalanildi."),
+      para("To'rtinchi yo'nalish — arab badiiy adabiyoti tarjimasi va targ'iboti. Sovet davrida arab yozuvchilarining asarlari — Nojib Mahfuz, Mahmud Taimur, Jurji Zaydong boshqalar — rus tiliga tarjima qilindi. Bu tarjimalar arab adabiyotini sovet kitobxonlariga tanishtirdi va ikki madaniyat o'rtasidagi ko'prik bo'ldi. Shu yo'l bilan Rossiya arabshunosligi badiiy tarjima madaniyatini ham rivojlantirdi."),
+
+      heading2("2.4. Sovet davrida Rossiya arabshunosligi"),
+      para("Sovet davri Rossiya arabshunosligi uchun ham rivojlanish, ham cheklanishlar davri bo'ldi. Bir tomondan, arabshunoslik davlat tomonidan moliyalashtirilib, institutlar, ekspeditsiyalar va nashrlar uchun katta mablag' ajratildi. Boshqa tomondan, marxistik mafkura ba'zi tadqiqotlarga siyosiy rang berdi, ayniqsa din va islomni baholashda."),
+      para("Sovet arabshunosligida «arab tarixiy materializmi» kontseptsiyasi keng tarqaldi. Bu kontseptsiya bo'yicha arab jamiyatining tarixiy rivojlanishi marxistik sinfiy kurash nazariyasi asosida talqin qilindi. Bunday yondashuv ba'zan tarixiy haqiqatni buzib ko'rsatdi, lekin ayni paytda arab jamiyatining ijtimoiy-iqtisodiy tahlilida ham bir qancha asosli kuzatishlar qilindi."),
+      para("Sovet davrida arabshunoslik kadrlari tayyorlash tizimi keng yo'lga qo'yildi. Moskva, Leningrad, Qozon, Toshkent va boshqa shaharlarda sharq tillari institutlari va fakultetlari ochildi. Bu muassasalarda arabshunoslik nafaqat akademik fan sifatida, balki diplomatiya, razvedka va tashqi savdo uchun ham o'rgatiladigan amaliy kasb sifatida qabul qilindi."),
+
+      // BOB III
+      pageBreak(),
+      heading1("III BOB. O'ZBEK ARABSHUNOSLIGI MAKTABI"),
+      heading2("3.1. O'rta Osiyo va Movarounnahr arabshunosligining tarixi"),
+      para("O'rta Osiyo — arabshunoslik uchun alohida ahamiyatga molik hudud. Bu mintaqada arabshunoslik Islom ilmining dastlabki asrlarida paydo bo'ldi va IX-XII asrlarda o'zining eng yuqori cho'qqisiga yetdi. Movarounnahrlik olimlar faqat arab tilini o'rganib qolmasdan, uni yangi g'oyalar bilan boyitdilar va arab ilmining rivojiga beqiyos hissa qo'shdilar. O'rta Osiyo shaharlari — Samarqand, Buxoro, Xorazm, Toshkent — o'rta asrlarda arab ilmiy an'anasining markazlariga aylandi."),
+      para("Mahmud az-Zamaxshariy (1075-1144) — arab tilshunosligi tarixining eng yirik siymosi. U Xorazm yaqinidagi Zamaxshar qishlog'ida tug'ilgan. Uning «Al-Mufassal fi san'at al-i'rob» asari arab grammatikasining mukammal qomusiga aylandi. Bu asar o'z davrida arab olamida tezda tarqalib, Bag'doddan Hindistonga qadar o'qitiladigan bo'ldi. Az-Zamaxshariyning «Al-Asas al-balag'a» lug'ati arab leksikografiyasiga yangi yo'nalish ochdi — so'zlarning majoziy ma'nolarini sistematik ravishda ko'rsatgan birinchi lug'at edi. Qur'on tafsiriga bag'ishlangan «Al-Kashshof» asari ham uning qalam mahsuli bo'lib, bu asar islom dunyosida hamon o'qilib kelinadi."),
+      para("Abu Rayhon Beruniy (973-1048) arabshunoslikka bevosita oid bo'lmasa-da, uning arab tilida yozgan asarlari arab ilmiy nasrining rivojlanishiga katta hissa qo'shdi. Beruniyning «Hindiston» va «Al-Qonun al-Mas'udiy» kabi asarlari arab ilmiy tilining moslashuvchanligini ko'rsatdi. Beruniy arab tilida faqat astronomiya va matematika haqida emas, balki Hindiston dini, madaniyati va tabiati haqida ham qomusiy asarlar yozdi. Bu jihat arabshunoslikka bir yangi yo'nalish — qiyosiy madaniyatshunoslık — qo'shdi."),
+      para("Ibn Sino (980-1037) ham arab tili va balag'at (ritorika) sohasida asarlar yozgan. Uning arab tilidagi falsafiy va tibbiy terminologiyani rivojlantirishdagi hissasi bebahodir. Ibn Sino arabcha tushunchalarni yangi ilmiy mazmunga boyitdi — uning «Ash-Shifo» va «Al-Qonun fit-tibb» asarlari arabcha ilmiy terminologiyani yangi darajaga ko'tardi. Bu terminologiya keyinchalik Yevropa tibbiyotiga ham o'tdi va lotin tiliga tarjima qilindi."),
+      para("O'rta asrlarda Samarqand va Buxoro madrasalarida arab tili barcha fanlarning asosi sifatida o'qitildi. Tibbiyot, matematika, astronomiya, falsafa — bularning barchasi arab tilida o'rgatiladigan edi. Shu sababli Movarounnahr olimlarining arabshunosligi nafaqat filologik, balki ilmiy-texnik ham yo'nalishda rivojlandi. Bu holat o'zbek arabshunosligining keyingi rivojiga ham ta'sir ko'rsatdi."),
+      para("XIV-XV asrlarda Temuriylar davlatida arabshunoslik yanada rivojlandi. Ulug'bek va uning saroy olimlari arab ilmiy asarlarini o'rganish bilan bir qatorda, ularga sharhlar ham yozdilar. Ali Qushchi, Qozizoda Rumiy kabi olimlar arab tilida astronomiyaga oid asarlar yaratdilar. Jomiy (1414-1492) esa arab nahvi (grammatika) ilmiga bag'ishlangan «Mulla Jomiy» nomli asari bilan arabshunoslikda o'ziga xos o'rin egalladi."),
+
+      heading2("3.2. O'zbek arabshunosligining XX asr vakillari"),
+      para("Sovet davridagi O'zbek arabshunosligi mustaqil maktab sifatida 1920-30-yillarda shakllana boshladi. Toshkent davlat universitetida (hozirgi O'zbekiston Milliy universiteti) arabshunoslik bo'limi ochilib, bu soha bo'yicha kadrlar tayyorlash boshlandi. Dastlab sovet arab siyosiy yo'nalishi ta'sirida bo'lgan bu bo'lim keyinchalik chuqur ilmiy arabehunoslik asarlarini yaratuvchi markaz sifatida rivojlandi."),
+      para("Abdulaziz Qayumov (1918-2005) — o'zbek arabshunosligi va sharqshunosligining yirik namoyandasi. U arab adabiyoti va Qur'on tafsiriga oid bir qator muhim asarlar yozdi. Qayumovning «Arab adabiyoti tarixi» o'quv qo'llanmasi o'zbek talabalariga mo'ljallangan birinchi sistematik asarlardan biri bo'ldi. Qayumov shuningdek arab nasrini o'zbek tiliga tarjima qilishda ham katta hissa qo'shdi. Uning arab klassik adabiyotidan qilgan tarjimalari o'zbek adabiy tiliga boylik qo'shdi va ikki madaniyat o'rtasidagi ko'prikni mustahkamladi."),
+      para("Botirbek Valixo'jayev (1932-2006) o'rta asrlar arab qo'lyozmalarini o'rganishda alohida hissa qo'shdi. U O'zbekiston FA Sharqshunoslik institutida uzoq yillar faoliyat yuritib, arab va fors qo'lyozmalariga ilmiy tavsif berdi. Valixo'jayevning qo'lyozmalarga oid bibliografik ishlari bugungi kunda ham foydalaniladigan asosiy manba hisoblanadi. U institutdagi qo'lyozmalar fondini kataloglash va ilmiy yo'l bilan tartibga solishda hal qiluvchi rol o'ynadi."),
+      para("Hamid Homidiy (1940-2013) — arab tilining grammatik tizimini o'zbek lingvistikasi bilan qiyosiy o'rganishda muhim ilmiy asarlar yaratdi. Uning «Arab tili grammatikasi» darsligi Toshkent davlat sharq tillari institutida uzoq yillar asosiy o'quv qo'llanma sifatida ishlatildi. Homidiyning qiyosiy lingvistika sohasidagi ishlari arab va o'zbek tillarining o'xshashliklari va farqlarini aniq ko'rsatib berdi. Bu ishlar arab tilini o'zbek tili orqali o'rganish metodikasini yanada samarali qildi."),
+      para("Shamsiddin Kamoliddin — o'rta asrlar Movarounnahr tarixini arab manbalari asosida o'rganuvchi taniqli tadqiqotchi. Uning ko'plab ilmiy maqolalari va monografiyalari o'zbek arabshunosligi manbashunosligi yo'nalishini yanada boyitdi. Kamoliddin arab geografik manbalari — Istaxriy, Ibn Havqal, Muqaddasiy — da keltirilgan O'rta Osiyo shaharlariga oid ma'lumotlarni arxeologik va tarixiy materiallar bilan qiyoslab, yangi ilmiy xulosalar chiqardi."),
+      para("Muxtasar Mahmudov — zamonaviy o'zbek arabshunosligi vakili. U arab lug'atshunosligi va leksikologiyasi sohasida tadqiqotlar olib bormoqda. Uning ishlari sovet davri arabshunosligining yangi metodologiya asosida qayta ko'rib chiqilishida muhim o'rin tutadi. Mahmudov arab va o'zbek leksikologiyasini qiyosiy o'rganish orqali ikkala tildagi umumiy leksik qatlam va o'zaro qarz so'zlarni sistematik ravishda tahlil qildi."),
+
+      heading2("3.3. O'zbek arabshunosligining asosiy yo'nalishlari va natijalari"),
+      para("O'zbek arabshunosligi sovet davridan hozirgi kungacha bir necha asosiy yo'nalishda rivojlanib keldi. Birinchi va eng muhim yo'nalish — qo'lyozmashunoslika va manbatanqidi. O'zbekiston FA Sharqshunoslik institutida (hozirgi Abu Rayhon Beruniy nomidagi Sharqshunoslik instituti) saqlanayotgan 50 000 dan ortiq arab, fors va turk qo'lyozmalari o'zbek arabshunoslari uchun asosiy ilmiy manba hisoblanadi. Bu ulkan qo'lyozmalar xazinasi O'rta Osiyo, Arab dunyosi va boshqa hududlarda yozilgan noyob asarlarni o'z ichiga oladi."),
+      para("Ikkinchi yo'nalish — arab tilshunosligi va grammatikaning o'zbek maktablarida o'qitilishi. Bu sohadagi o'quv va ilmiy-metodik asarlar yozish O'zbekiston mustaqillikka erishganidan so'ng yanada faollashdi. Arab tili va adabiyoti bo'yicha yangi dasturlar, lug'atlar va darsliklar nashr etildi. O'zbekistonda madrasalar tizimi tiklanishi bilan arab tili ta'limiga bo'lgan talab keskin oshdi, bu esa yangi metodik asarlar yaratishni taqozo etdi."),
+      para("Uchinchi yo'nalish — islom manbashunosligi. Bu soha O'zbekiston mustaqilligidan so'ng ayniqsa tez rivojlandi. Hadis ilmi, fiqh manbalari, kalom va tasavvuf adabiyotini o'rganish bo'yicha ilmiy ishlar ko'paydi. Bu yo'nalishda Imom Buxoriy, Imom Termiziy va boshqa buyuk muhaddis olimlar merosini ilmiy tadqiq etish markaziy o'rin tutadi. «Sahih al-Buxoriy»ning o'zbek tilidagi tarjimasi va sharhi yetakchi arabshunoslari ishtirokida amalga oshirildi."),
+      para("To'rtinchi yo'nalish — arab-o'zbek leksikografiyasi. Ikki tilli va ko'p tilli lug'atlar, terminologik lug'atlar yaratish bu sohadagi muhim natijalar qatoriga kiradi. «Arab-o'zbek lug'ati» va «O'zbek-arab lug'ati» kabi asarlar amaliy jihatdan katta ahamiyatga ega. Bu lug'atlar nafaqat akademik maqsadlar uchun, balki diplomat, savdogar va ziyoratchilar uchun ham zarur amaliy vosita bo'lib xizmat qilmoqda."),
+
+      heading2("3.4. Mustaqillik davrida o'zbek arabshunosligi"),
+      para("O'zbekiston 1991-yilda mustaqillikka erishgach, arabshunoslik sohasida ham yangi bosqich boshlandi. Sovet davrining mafkuraviy cheklanishlaridan xoli bo'lgan o'zbek arabshunosligi islom ilmiy merosiga yangicha nazar bilan qarash imkoniyatiga ega bo'ldi. Bu davrda arab tili o'qitiladigan muassasalar soni keskin oshdi — nafaqat universitetlarda, balki madrasalar va islom institutlarida ham arabshunoslik kadrlar tayyorlash avj oldi."),
+      para("Mustaqillik davrida xalqaro hamkorlik kengaydi. O'zbek arabshunoslari endi faqat Rossiya bilan emas, balki Arab dunyosining ilmiy markazlari — Qohira, Bag'dod, Riyd, Dubai — bilan ham hamkorlik qila boshladi. Saudiya Arabistoni va boshqa Arab mamlakatlarining grantlari bilan o'zbek talabalari arab universitetlarida tahsil oldi, bu esa o'zbek arabshunosligiga yangi impuls berdi."),
+      para("Toshkentda Imom Buxoriy xalqaro markazi (1998) tashkil etildi. Bu markaz islom manbashunosligi va arabshunoslikdagi ilmiy tadqiqotlar uchun muhim bazaga aylandi. Shuningdek, O'zbekiston islom universiteti va o'nlab viloyat islom institutlarida arabshunoslik ta'limi yo'lga qo'yildi. Bu muassasalar o'zbek arabshunosligining kelajakdagi rivojlanishi uchun kadrlar yetishtirib chiqarishda hal qiluvchi rol o'ynamoqda."),
+
+      // BOB IV
+      pageBreak(),
+      heading1("IV BOB. ROSSIYA VA O'ZBEK ARABSHUNOSLIGINI QIYOSIY TAHLIL"),
+      heading2("4.1. O'xshashliklar va farqlar"),
+      para("Rossiya va o'zbek arabshunosligini qiyosiy o'rganish bir qator muhim o'xshashlik va farqlarni ko'rsatadi. Bu ikki maktab o'rtasidagi o'xshashliklarni quyidagicha izohlash mumkin. Birinchi o'xshashlik — metodologik umumiylik. Sovet davrida ikkala maktab ham yagona ilmiy-metodologik asos — marksistik tarixiylik printsipi va qiyosiy-tarixiy metod — asosida rivojlandi. Bu holat ikkala maktab ishlarida muayyan yagona yondashuv shakllanishiga olib keldi."),
+      para("Ikkinchi o'xshashlik — qo'lyozmalarga e'tibor. Ikkinchi jahon urushiga qadar va undan so'ng ham ikkala maktab arab qo'lyozmalarini tadqiq etish, kataloglash va nashr etishga katta e'tibor berdi. Rossiya Fanlar akademiyasi va O'zbekiston Fanlar akademiyasi shu sohadagi hamkorlik an'anasini davom ettirdi. Ikkala maktab ham arab qo'lyozmalarini ilmiy asosda tartibga solish va keng ilmiy jamoatchilik uchun ochiq qilish maqsadini ko'zladi."),
+      para("Uchinchi o'xshashlik — klassik arab adabiyotiga e'tibor. Ikkala maktab ham Abbasiylar davri klassik arab she'riyati va nasrini, Qur'on tafsirlari hamda hadis adabiyotini asosiy tadqiqot ob'ekti sifatida qabul qildi. Bu o'xshashlik ikkala maktabning umumiy akademik qadriyatlar tizimiga ega ekanligidan dalolat beradi."),
+      para("Farqlardan birinchisi — tarixiy asos va motivatsiya. Rossiya arabshunosligi dastlab diplomatik, harbiy va savdo munosabatlari talabidan kelib chiqdi. O'zbek arabshunosligi esa bevosita islom ilmiy an'anasining vorisi sifatida shakllandi — bu farq ikkala maktab ilmiy ustuvorliklarida hamon seziladi. Rossiya arabshunosligi tashqaridan qaraydigan «sharqshunos» pozitsiyasidan ish olib borsa, o'zbek arabshunosligi ko'p jihatdan «uydan» — islom madaniyatining bir qismi sifatida — arabshunoslikka yondashadi."),
+      para("Ikkinchi farq — tadqiqot ob'ektining yo'nalishi. Rossiya arabshunoslari ko'proq jahon arabshunosligi kontekstida ish olib bordilar — arab-lotin, arab-grek, arab-fors munosabatlari, arabshunoslikning Yevropa va jahon ilmiga hissasi kabi keng mavzularni qamrab oldilar. O'zbek arabshunoslari esa ko'proq mahalliy — Movarounnahr, O'rta Osiyo, Xuroson — kontekstiga e'tibor qaratdilar. Bu farq ikki maktabning geografik va madaniy o'ziga xosligidan kelib chiqadi."),
+      para("Uchinchi farq — diniy-ma'naviy o'lcham. O'zbek arabshunosligi mustaqillik yillaridan boshlab islom ilmiy merosini tiklash va qayta baholashga alohida e'tibor berdi. Rossiya arabshunosligi esa bu jihatda ancha sekulyar (dunyoviy) yo'nalishni saqladi. Bu farq har ikki maktabning arab tili va madaniyatiga bo'lgan munosabatida sezilarli farqlanishlarni keltirib chiqaradi."),
+      para("To'rtinchi farq — leksikografiya va amaliy arabshunoslik sohasida. O'zbek arabshunosligi arab-o'zbek lug'atchiligiga katta e'tibor bergan va bu soha to'g'ridan-to'g'ri amaliy foydalanuvchilar — talabalar, imam-xatiblar, tarjimonlar — ehtiyojini qondiradi. Rossiya arabshunosligi esa asosan akademik maqsadlar uchun, ya'ni ilmiy jamoatchilikka mo'ljallangan lug'at va qo'llanmalar yaratishga e'tibor berdi."),
+
+      heading2("4.2. Hamkorlik va o'zaro ta'sir"),
+      para("Rossiya va o'zbek arabshunosligi o'rtasida tarixan yaqin hamkorlik bo'lgan. 1930-70-yillarda Moskva va Leningradda arabshunoslik markazlari O'zbekistonga nafaqat ilmiy metodologiya, balki kadr tayyorlashda ham katta yordam ko'rsatdi. O'zbek arabshunoslari ko'pincha Moskva va Leningraddagi yetakchi universitetlarda ta'lim olgan. Ular uyga qaytgach, Rossiya maktabining ilmiy metodologiyasini O'zbekistonga olib kela boshladilar."),
+      para("Krachkovskiy va uning shogirdlari O'rta Osiyodagi arab qo'lyozmalarini o'rganishda bevosita ishtirok etdilar. Masalan, Krachkovskiyning ekspeditsiyalari va Toshkent qo'lyozmalar fondiga qo'shgan hissasi bugungi kunda ham qimmatli manba sifatida tan olinadi. Krachkovskiy O'rta Osiyo qo'lyozmalarida saqlanayotgan arab geografik manbalarini tadqiq etib, bu materiallar asosida fundamental ilmiy asarlar yaratdi."),
+      para("Sovet davrida ikkala maktab o'rtasida qo'shma ekspeditsiyalar va nashrlar tashkil etildi. Moskvada va Leningradda o'zbek arabshunoslari tomonidan yozilgan maqolalar nashr etildi, aksincha O'zbekistondagi ilmiy jurnallarda rus arabshunoslari ishtirok etdi. Bu o'zaro ta'sir ikkala maktabning ilmiy darajasini oshirishga hissa qo'shdi."),
+      para("1991-yildan so'ng ikki maktab o'rtasidagi munosabatlar yangi shaklga kirdi. O'zbek arabshunosligi endi mustaqil milliy maktab sifatida rivojlana boshladi. Xalqaro hamkorlik doirasi kengaydi — Arab dunyosi, Turkiya, Yevropa ilmiy markazlari bilan aloqalar o'rnatildi. Biroq Rossiya arabshunosligi bilan munosabatlar ham davom etdi, garchi u oldingi iyerarxik tuzilmadan ko'ra tenghuquqli hamkorlik shaklini ola boshladi."),
+      para("Hozirgi kunda Rossiya va o'zbek arabshunoslari ayrim qo'shma loyihalarda ishtirok etmoqdalar. Jumladan, o'rta asrlar manbalarini qo'shma nashr etish, bilimlar almashish dasturlari va ilmiy konferentsiyalar orqali munosabatlar davom ettirilmoqda. Bu hamkorlik ikki maktab uchun ham samarali bo'lib, o'zaro boyitish omili vazifasini o'tamoqda. Xususan, O'zbekiston FA Sharqshunoslik instituti va Rossiya FA Sharqshunoslik instituti o'rtasidagi ilmiy almashinuv bugungi kunda ham davom etmoqda."),
+
+      heading2("4.3. Zamonaviy arabshunoslikda yangi tendensiyalar"),
+      para("XXI asrda arabshunoslik yangi tendensiyalar bilan rivojlanmoqda. Raqamli texnologiyalar arab qo'lyozmalarini raqamlashtirish va ularni onlayn bazaga kiritish imkonini berdi. Bu sohadagi loyihalar — Google Books Arab Collection, Cambridge University digital manuscript library — arab qo'lyozmalarini jahon olimlari uchun ochiq qilib qo'ymoqda. O'zbek va rus arabshunoslari ham bu tendensiyaga qo'shilib, o'z qo'lyozmalari fondlarini raqamlashtirish ishlarini boshladi."),
+      para("Korporativlashuv va xalqarolashuv zamonaviy arabshunoslikdagi yana bir muhim tendensiya. Hozirgi kunda bitta muallif bitta mamlakatda yozgan asarlar emas, balki xalqaro jamoa tomonidan tayyorlangan qo'shma loyihalar ko'proq e'tiborni tortmoqda. O'zbek va rus arabshunoslari ham bu tendensiyani inobatga olgan holda, Yevropa, Amerika va Arab dunyosidagi hamkorlar bilan birgalikda loyihalar amalga oshirmoqda."),
+      para("Zamonaviy arabshunoslikda tilshunoslik, ijtimoiy fanlar va madaniyatshunoslikning o'zaro kesishishi yangi yo'nalishlarni shakllantirmoqda. Genderli arabshunoslik, postkolonial arabshunoslik, diskurs tahlili kabi yangi yondashuvlar an'anaviy filologik arabshunoslikni boyitmoqda. Bu tendensiyalar O'zbek va Rossiya arabshunosligi maktablariga ham ta'sir ko'rsatmoqda va ular asta-sekin ushbu yangi uslubiy yondashuvlarni o'z tadqiqotlariga qo'llashni boshlagan."),
+
+      // XULOSA
+      pageBreak(),
+      heading1("XULOSA"),
+      para("Mazkur mustaqil ish davomida Rossiya va o'zbek arabshunoslik maktablarining tarixi, vakillari, metodologiyasi hamda o'zaro munosabatlari qiyosiy ravishda o'rganildi. Olingan natijalar asosida quyidagi xulosalar chiqarish mumkin."),
+      para("Birinchidan, Rossiya arabshunosligi XVIII asrda davlat zarurati asosida shakllangan bo'lsa, o'zbek arabshunosligi islom ilmiy an'anasining bevosita vorisi sifatida paydo bo'lgan. Bu ikki maktabning turli tarixiy ildizlari ularning ilmiy ustuvorliklarida ham o'z aksini topgan. Rossiya arabshunosligi ko'proq tashqi dunyo bilan muloqot va diplomatik ehtiyojdan kelib chiqqan bo'lsa, o'zbek arabshunosligi arabshunoslikni o'z madaniyatini chuqur o'rganish sifatida qabul qilgan."),
+      para("Ikkinchidan, sovet davri ikki maktabni yagona metodologik platforma asosida birlashtirdi. Bu holat ma'lum jihatdan ijobiy natijalar berdi — birgalikdagi qo'lyozmashunoslık ishlari, qo'shma nashrlar va kadr almashish bu davrda faollashdi. Biroq bu bir xillik ham ikki maktabning o'ziga xos milliy xususiyatlarini qisman chekladi. Sovet davrida har ikki maktab ham mafkuraviy cheklovlar doirasida ish yuritishga majbur bo'ldi."),
+      para("Uchinchidan, o'zbek arabshunosligi mustaqillik yillaridan boshlab yangi bosqichga ko'tarildi. Islom ilmiy merosiga e'tibor kuchaydi, yangi o'quv qo'llanmalar va lug'atlar yaratildi. Bu rivojlanish o'zbek arabshunosligini jahon ilmiy hamjamiyatida mustaqil maktab sifatida tan olishga imkon berdi. Ayniqsa, qo'lyozmashunoslık, hadisshunoslik va islom manbashunosligi sohasidagi ishlar o'zbek maktabining kuchli tomonini namoyish etdi."),
+      para("To'rtinchidan, hozirgi kunda ikki maktab o'rtasida hamkorlik yangi shakllar kasb etmoqda. Mustaqillik davri sharoitida ularning munosabatlari ilgari sovet tizimi ichidagi iyerarxik tuzilmadan ko'ra tenghuquqli ilmiy hamkorlik formatiga o'tdi. Bu o'zgarish ikki maktab uchun ham yangi imkoniyatlar ochmоqda."),
+      para("Beshinchidan, raqamli texnologiyalar va xalqarolashuv zamonaviy arabshunoslikda yangi tendensiyalarni shakllantirmoqda. Bu tendensiyalar ham Rossiya, ham o'zbek arabshunosligi maktablariga ta'sir ko'rsatmoqda va ularni yangi metodologik yondashuvlarni o'zlashtirish zaruriyati oldiga qo'ymoqda. Qo'lyozmalar fondlarini raqamlashtirish, onlayn bazalar yaratish va xalqaro qo'shma loyihalarda ishtirok etish bu ikki maktabning kelajakdagi rivojlanishida muhim rol o'ynaydi."),
+      para("Shaxsiy xulosamga ko'ra, Rossiya va o'zbek arabshunosligini qiyosiy o'rganish nafaqat ikkala maktabning o'ziga xos xususiyatlarini, balki arabshunoslik fanining umumiy rivojlanish qonuniyatlarini ham yanada chuqurroq anglashga imkon beradi. Ikki maktabning kuchli tomonlarini uyg'unlashtirgan holda olib boriladigan kelajakdagi hamkorlik arabshunoslikning keyingi rivojiga beqiyos hissa qo'shadi. Globallashuv davrida milliy ilmiy maktablar o'rtasidagi tenghuquqli hamkorlik, o'zaro boyitish va ta'sir — arabshunoslik fanini yanada yuksak cho'qqilarga ko'tarishga xizmat qiladi."),
+
+      // ADABIYOTLAR
+      pageBreak(),
+      heading1("FOYDALANILGAN ADABIYOTLAR"),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "I. Asosiy ilmiy adabiyotlar:", size: 24, font: "Times New Roman", bold: true })], spacing: { before: 120, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "1. Krachkovskiy I.Yu. Arabskaya geograficheskaya literatura. — Moskva-Leningrad: Izdatelstvo AN SSSR, 1957. — 919 s.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "2. Krachkovskiy I.Yu. Izbrannie sochineniya. T. I-VI. — Moskva-Leningrad: AN SSSR, 1955-1960.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "3. Krachkovskiy I.Yu. Nad arabskimi rukopisyami. — Moskva: AN SSSR, 1946. — 168 s.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "4. Gordlevskiy V.A. Izbrannye sochineniya. T. II: Yazyk i literatura. — Moskva: Nauka, 1961. — 560 s.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "5. Shumovskiy T.A. Tri zagadochnykh puteshestviya. — Moskva: Nauka, 1969.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "6. Qayumov A. Arab adabiyoti tarixi. — Toshkent: O'qituvchi, 1998. — 304 b.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "7. Kamoliddin Sh. Drevnetyurkskaya toponimiya Sredney Azii. — Toshkent: Sharq, 2006. — 258 b.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "II. Arab tilidagi manbalar:", size: 24, font: "Times New Roman", bold: true })], spacing: { before: 120, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "8. Zamaxshariy M. Al-Mufassal fi san'at al-i'rob. — Bayrut: Dor al-Jil, 1990.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "9. Zamaxshariy M. Al-Kashshof an haqoiq al-tanzil. T. 1-4. — Bayrut: Dor al-Kitab al-Arabiy, 1987.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "10. Ibn Jinniy. Al-Xasois. T. 1-3. — Qohira: al-Hay'a al-Misriyya al-Omma lil-kitab, 1986.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "11. Sibavayhi. Al-Kitob. T. 1-5. — Bayrut: Alam al-kutub, 1983.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "III. G'arbiy adabiyotlar:", size: 24, font: "Times New Roman", bold: true })], spacing: { before: 120, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "12. Brockelmann C. Geschichte der arabischen Litteratur. — Leiden: Brill, 1943-1949.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "13. De Sacy Silvestre. Grammaire arabe. — Paris, 1810. (2-nashr: 1831).", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "14. Goldziher I. Muhammedanische Studien. — Halle: Niemeyer, 1889-1890. T. 1-2.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "IV. Entsiklopedik va bibliografik nashrlar:", size: 24, font: "Times New Roman", bold: true })], spacing: { before: 120, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "15. O'zbekiston FA Sharqshunoslik instituti. Arab qo'lyozmalari katalogi. — Toshkent: Fan, 1982. — 450 b.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "16. Sotsialisticheskiy Vostok. — Moskva: AN SSSR, Sharqshunoslik instituti, 1924-1937.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "17. O'zbek sovet ensiklopediyasi. — Toshkent: O'zSE, 1971-1980. T. 1-14.", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      emptyLine(),
+      new Paragraph({ children: [new TextRun({ text: "V. Elektron resurslar:", size: 24, font: "Times New Roman", bold: true })], spacing: { before: 120, after: 80 } }),
+      new Paragraph({ children: [new TextRun({ text: "18. Arabshunoslik va islom tadqiqotlari. — [Elektron resurs]: www.sharqshunoslik.uz (murojaat kuni: 2025).", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "19. Institut vostokovedeniya RAN. — [Elektron resurs]: www.ivran.ru (murojaat kuni: 2025).", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+      new Paragraph({ children: [new TextRun({ text: "20. Al-Waraq — Arab manuscripts digital library. — [Elektron resurs]: www.alwaraq.net (murojaat kuni: 2025).", size: 24, font: "Times New Roman" })], spacing: { before: 80, after: 60 }, indent: { left: 360 } }),
+    ]
+  }]
+});
+
+Packer.toBuffer(doc).then(buffer => {
+  fs.writeFileSync('/mnt/user-data/outputs/Mustaqil_ish_Arabshunoslik_kengaytirilgan.docx', buffer);
+  console.log('Done! File created.');
+}).catch(err => {
+  console.error('Error:', err);
+  process.exit(1);
+});
